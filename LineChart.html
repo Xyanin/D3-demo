@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>折线图</title>
+    <script src='d3.js'></script>
+  </head>
+  <body>
+    <script>
+      var width = 400;
+      var height = 400;
+      var padding = {left: 50, right: 40, top: 30, bottom: 20};
+      var dataset= [[1, 224], [2, 528], [3, 756], [4, 632], [5, 582], [6, 704],
+      [7, 766], [8, 804], [9, 884], [10, 960], [11, 1095], [12, 1250]];
+      var svg = d3.select('body') //选择body
+                  .append('svg')  //添加svg
+                  .attr('width', width)
+                  .attr('height', height);  //设置svg长宽
+      var min0 = d3.min(dataset, function(d) { //d为每个[], d[0]即为前面那个值 由此来定最大最小
+        return d[0];
+      })
+      var max0 = d3.max(dataset, function(d) {
+        return d[0];
+      })
+      var min1 = d3.min(dataset, function(d) { //d为每个[], d[1]即为后面那个值 由此来定最大最小
+        return d[1];
+      })
+      var max1 = d3.max(dataset, function(d) {
+        return d[1];
+      })
+
+      var xScale = d3.scale.linear()
+                      .domain([min0 - 0.5, max0 + 0.5])
+                      .range([0, width - padding.left - padding.right])
+      var yScale = d3.scale.linear()
+                      .domain([min1 - 100, max1 + 100])
+                      .range([height - padding.top - padding.bottom, 0])
+      var xAxis = d3.svg.axis() //定义x轴
+                  .scale(xScale)
+                  .orient('bottom');  //刻度向下
+      var yAxis = d3.svg.axis() //定义y轴
+                  .scale(yScale)
+                  .orient('left');  //刻度向左
+      svg.append('g') //画x轴
+          .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)
+          .call(xAxis)
+      svg.append('g') //画y轴
+          .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
+          .call(yAxis)
+      var linePath = d3.svg.line()  //线段生成器
+                        .x(function(d) { return xScale(d[0]) })
+                        .y(function(d) { return yScale(d[1]) })
+      svg.append('g')   //画线
+          .append('path')
+          .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')
+          .attr('d', linePath(dataset))
+          .attr('fill', 'none') //一定要设置为none否则会变成区域
+          .attr('stroke-width', 3)  //设置线粗细
+          .attr('stroke', 'green')  //设置颜色
+      svg.append('g') //画点
+          .selectAll('circle')
+          .data(dataset)
+          .enter()
+          .append('circle')
+          .attr('r', 5)
+          .attr('transform', function(d) {
+            return 'translate(' + (xScale(d[0]) + padding.left) + ',' + (yScale(d[1]) + padding.top) + ')'
+          })
+          .attr('fill', 'green')
+    </script>
+  </body>
+</html>

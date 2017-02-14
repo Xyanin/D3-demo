@@ -37,12 +37,12 @@
                   .attr('x', function (d, i) {  //x方向起始位置
                     return xScale(i) + rectpadding
                   })
-                  .attr('y', function (d, i) {  //y方向起始位置
+                  .attr('y', function (d, i) {  //y方向起始位置(由于是会由起点开始动所以此时为起点)
                     return height - padding.top - padding.bottom
                   })
                   .attr('width', rectwidth)
                   .attr('height', function (d, i) {
-                    return 0
+                    return 0  //由于是会由起点开始动所以此时为0
                   })
                   .attr('fill', 'white')
                   .transition()

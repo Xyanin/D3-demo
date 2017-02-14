@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>柱形图</title>
+    <script src='d3.js'></script>
+  </head>
+  <body>
+    <script>
+    var width = 400;
+    var height = 400;
+    var dataset = [0, 100, 200, 300, 400, 500];
+    var rectwidth = 20;
+    var padding = {left: 50, right: 40, top: 30, bottom: 20};
+    var rectpadding = 10;
+    var svg = d3.select('body') //选择body
+                .append('svg')  //添加svg
+                .attr('width', width)
+                .attr('height', height);  //设置svg长宽
+    var xScale = d3.scale.ordinal() //序数比例尺
+                .domain(d3.range(dataset.length)) //原数字
+                .rangeRoundBands([0, width - padding.left - padding.right]); //按比例尺放大至
+    var yScale = d3.scale.linear()  //线性比例尺
+                .domain([-100, d3.max(dataset) + 100])
+                .range([height - padding.top - padding.bottom, 0]);
+    var xAxis = d3.svg.axis() //定义x轴
+                .scale(xScale)
+                .orient('bottom');  //刻度向下
+    var yAxis = d3.svg.axis() //定义y轴
+                .scale(yScale)
+                .orient('left');  //刻度向左
+    var rects = svg.selectAll('rect')  //根据数据画柱状图
+                .data(dataset)
+                .enter()
+                .append('rect')
+                .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
+                .attr('x', function (d, i) {  //x方向起始位置
+                  return xScale(i) + rectpadding
+                })
+                .attr('y', function (d, i) {  //y方向起始位置
+                  return height - padding.top - padding.bottom
+                })
+                .attr('width', rectwidth)
+                .attr('height', function (d, i) {
+                  return 0
+                })
+                .attr('fill', 'white')
+                .transition()
+                .duration(2000)
+                .ease('bounce')
+                .attr('fill', 'black')
+                .attr('y', function (d, i) {  //x方向起始位置
+                  return yScale(d)
+                })
+                .attr('height', function (d, i) {
+                  return height - padding.top - padding.bottom - yScale(d)  //柱状图都是倒过来的 由上往下的
+                })
+    var texts = svg.selectAll('text')
+                    .data(dataset)
+                    .enter()
+                    .append('text')
+                    .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
+                    .attr('x', function(d, i) {
+                      return xScale(i) + rectpadding
+                    })
+                    .attr('y', function(d, i) {
+                      return height - padding.bottom
+                    })
+                    .attr('dx', function() {
+                      return 0
+                    })
+                    .attr('dy', function() {
+                      return -4
+                    })
+                    .text(function(d) {
+                      return d
+                    })
+                    .attr('fill', 'white')
+                    .transition()
+                    .duration(2000)
+                    .ease('bounce')
+                    .attr('fill', 'black')
+                    .attr('y', function(d, i) {
+                      return yScale(d)
+                    })
+      svg.append('g') //画x轴
+          .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)
+          .call(xAxis)
+      svg.append('g') //画y轴
+          .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
+          .call(yAxis)
+    </script>
+  </body>
+</html>

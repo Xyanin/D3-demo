@@ -4,12 +4,24 @@
     <meta charset="utf-8">
     <title>折线图</title>
     <script src='d3.js'></script>
-  </head>
+  </head>  <style>
+  .axis path,
+  .axis line{
+      fill: none;
+      stroke: black;
+      /*shape-rendering: crispEdges;*/
+  }
+
+  .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+  }
+  </style>
   <body>
     <script>
-      var width = 400;
-      var height = 400;
-      var padding = {left: 50, right: 40, top: 30, bottom: 20};
+      var width = 500;
+      var height = 500;
+      var padding = {left: 50, right: 40, top: 30, bottom: 25};
       var dataset= [[1, 224], [2, 528], [3, 756], [4, 632], [5, 582], [6, 704],
       [7, 766], [8, 804], [9, 884], [10, 960], [11, 1095], [12, 1250]];
       var svg = d3.select('body') //选择body
@@ -37,16 +49,27 @@
                       .range([height - padding.top - padding.bottom, 0])
       var xAxis = d3.svg.axis() //定义x轴
                   .scale(xScale)
-                  .orient('bottom');  //刻度向下
+                  .orient('bottom')  //刻度向下
+                  .innerTickSize(0) //可以设置刻度线长度
+                  .outerTickSize(0) //设置两头的两个刻度的长度
+                  .ticks(10) //设置几个刻度
       var yAxis = d3.svg.axis() //定义y轴
                   .scale(yScale)
                   .orient('left');  //刻度向左
       svg.append('g') //画x轴
+          .attr("class","axis")
           .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)
           .call(xAxis)
+          .append('text') //加上单位
+          .text('日期')
+          .attr('transform', 'translate(' + (width - padding.left - padding.right) + ', 10)')
       svg.append('g') //画y轴
+          .attr("class","axis")
           .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
           .call(yAxis)
+          .append('text') //加上单位
+          .text('值')
+          .attr('transform','translate(-10, ' +  -10 + ')')
       var linePath = d3.svg.line()  //线段生成器
                         .x(function(d) { return xScale(d[0]) })
                         .y(function(d) { return yScale(d[1]) })

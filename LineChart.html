@@ -67,6 +67,20 @@
             return 'translate(' + (xScale(d[0]) + padding.left) + ',' + (yScale(d[1]) + padding.top) + ')'
           })
           .attr('fill', 'green')
+          .on("mouseover",function(d,i){
+              d3.select(this)
+                  .transition()
+                  .duration(300)
+                  .attr("fill","steelblue")
+                  .attr('r', 10)
+          })
+          .on("mouseout",function(d,i){
+              d3.select(this)
+                  .transition()
+                  .duration(500)
+                  .attr('r', 5)
+                  .attr("fill","green");
+          });
     </script>
   </body>
 </html>

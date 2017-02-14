@@ -9,7 +9,9 @@
     <script>
       var width = 400;
       var height = 400;
-      var dataset = [0, 100, 200, 300, 400, 500];
+      // var dataset = [0, 100, 200, 300, 400, 500];
+      var dataset= [[1, 224], [2, 528], [3, 756], [4, 632], [5, 582], [6, 704],
+      [7, 766], [8, 804], [9, 884], [10, 960], [11, 1095], [12, 1250]];
       var rectwidth = 20;
       var padding = {left: 50, right: 40, top: 30, bottom: 20};
       var rectpadding = 10;
@@ -17,12 +19,32 @@
                   .append('svg')  //添加svg
                   .attr('width', width)
                   .attr('height', height);  //设置svg长宽
-      var xScale = d3.scale.ordinal() //序数比例尺
-                  .domain(d3.range(dataset.length)) //原数字
-                  .rangeRoundBands([0, width - padding.left - padding.right]); //按比例尺放大至
-      var yScale = d3.scale.linear()  //线性比例尺
-                  .domain([-100, d3.max(dataset) + 100])
-                  .range([height - padding.top - padding.bottom, 0]);
+      // var xScale = d3.scale.ordinal() //序数比例尺
+      //             .domain(d3.range(dataset.length)) //原数字
+      //             .rangeRoundBands([0, width - padding.left - padding.right]); //按比例尺放大至
+      // var yScale = d3.scale.linear()  //线性比例尺
+      //             .domain([-100, d3.max(dataset) + 100])
+      //             .range([height - padding.top - padding.bottom, 0]);
+      var min0 = d3.min(dataset, function(d) { //d为每个[], d[0]即为前面那个值 由此来定最大最小
+        return d[0];
+      })
+      var max0 = d3.max(dataset, function(d) {
+        return d[0];
+      })
+      var min1 = d3.min(dataset, function(d) { //d为每个[], d[1]即为后面那个值 由此来定最大最小
+        return d[1];
+      })
+      var max1 = d3.max(dataset, function(d) {
+        return d[1];
+      })
+
+      var xScale = d3.scale.linear()
+                      .domain([min0 - 0.5, max0 + 0.5])
+                      .range([0, width - padding.left - padding.right])
+      var yScale = d3.scale.linear()
+                      .domain([min1 - 100, max1 + 100])
+                      .range([height - padding.top - padding.bottom, 0])
+
       var xAxis = d3.svg.axis() //定义x轴
                   .scale(xScale)
                   .orient('bottom');  //刻度向下
@@ -49,11 +71,11 @@
                   .duration(2000)
                   .ease('bounce')
                   .attr('fill', 'black')
-                  .attr('y', function (d, i) {  //x方向起始位置
-                    return yScale(d)
+                  .attr('y', function (d, i) {
+                    return yScale(d[1])
                   })
                   .attr('height', function (d, i) {
-                    return height - padding.top - padding.bottom - yScale(d)  //柱状图都是倒过来的 由上往下的
+                    return height - padding.top - padding.bottom - yScale(d[1])  //柱状图都是倒过来的 由上往下的
                   })
       var texts = svg.selectAll('text')
                       .data(dataset)
@@ -73,7 +95,7 @@
                         return -4
                       })
                       .text(function(d) {
-                        return d
+                        return d[1]
                       })
                       .attr('fill', 'white')
                       .transition()
@@ -81,7 +103,7 @@
                       .ease('bounce')
                       .attr('fill', 'black')
                       .attr('y', function(d, i) {
-                        return yScale(d)
+                        return yScale(d[1])
                       })
         svg.append('g') //画x轴
             .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)

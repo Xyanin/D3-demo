@@ -24,10 +24,12 @@
       var padding = {left: 50, right: 40, top: 30, bottom: 25};
       var dataset= [[1, 224], [2, 528], [3, 756], [4, 632], [5, 582], [6, 704],
       [7, 766], [8, 804], [9, 884], [10, 960], [11, 1095], [12, 1250]];
+
       var svg = d3.select('body') //选择body
                   .append('svg')  //添加svg
                   .attr('width', width)
                   .attr('height', height);  //设置svg长宽
+
       var min0 = d3.min(dataset, function(d) { //d为每个[], d[0]即为前面那个值 由此来定最大最小
         return d[0];
       })
@@ -56,6 +58,7 @@
       var yAxis = d3.svg.axis() //定义y轴
                   .scale(yScale)
                   .orient('left');  //刻度向左
+
       svg.append('g') //画x轴
           .attr("class","axis")
           .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)
@@ -70,17 +73,95 @@
           .append('text') //加上单位
           .text('值')
           .attr('transform','translate(-10, ' +  -10 + ')')
+
+      var a = d3.rgb(255,0,0);    //起始颜色
+      var b = d3.rgb(0,255,0);    //最终颜色
+      
+      var defs = svg.append('defs');  //开始写线性变换
+      var linearGradient = defs.append('linearGradient')
+                              .attr('id', 'linearColor')
+                              .attr('x1', '0%')
+                              .attr('y1', '0%')
+                              .attr('x2', '0%')
+                              .attr('y2', '100%')
+      var stop1 = linearGradient.append('stop')
+                                .attr('offset', '50%') //此处可以设置起始色从几开始
+                                .attr('stop-color', a.toString())
+      var stop2 = linearGradient.append('stop')
+                                .attr('offset', '80%') //此处设置终止色从几开始
+                                .attr('stop-color', b.toString())
+
+      var areaPath = d3.svg.area()  //区域生成器
+                        .x(function(d) { return xScale(d[0]) })
+                        .y0(function(d) { return height - padding.top - padding.bottom})
+                        .y1(function(d) { return yScale(d[1]) })
+      svg.append('g')   //画区域要画在最上面这样才不会覆盖线
+          .append('path')
+          .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')
+          .attr('d', areaPath(dataset))
+          // .attr('fill', 'yellow')
+          .style("fill","url(#" + linearGradient.attr("id") + ")")
+          .on("mouseover",function(d,i){
+              d3.select(this)
+                  .style('fill', 'pink')
+          })
+          .on("mouseout",function(d,i){
+              d3.select(this)
+                  .transition()
+                  .duration(300)
+                  .style('fill', 'yellow')
+          })
       var linePath = d3.svg.line()  //线段生成器
                         .x(function(d) { return xScale(d[0]) })
                         .y(function(d) { return yScale(d[1]) })
       svg.append('g')   //画线
           .append('path')
+          .attr("class","line")
           .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')
           .attr('d', linePath(dataset))
           .attr('fill', 'none') //一定要设置为none否则会变成区域
           .attr('stroke-width', 3)  //设置线粗细
           .attr('stroke', 'green')  //设置颜色
-      svg.append('g') //画点
+          // .on("mouseover",function(d,i){ //单独设置变换，后面设置了选点就变换线此处先注释掉
+          //     d3.select(this)
+          //         .transition()
+          //         .duration(300)
+          //         .attr('stroke', 'pink')  //设置颜色
+          // })
+          // .on("mouseout",function(d,i){
+          //     d3.select(this)
+          //         .transition()
+          //         .duration(500)
+          //         .attr('stroke', 'green')  //设置颜色
+          // });
+      // svg.append('g') //画圆环点
+      //     .selectAll('circle')
+      //     .data(dataset)
+      //     .enter()
+      //     .append('circle')
+      //     .attr('r', 5)
+      //     .attr('transform', function(d) {
+      //       return 'translate(' + (xScale(d[0]) + padding.left) + ',' + (yScale(d[1]) + padding.top) + ')'
+      //     })
+      //     .attr('fill', 'none') //一定要设置为none否则会变成区域
+      //     .attr('stroke-width', 3)  //设置线粗细
+      //     .attr('stroke', 'green')  //设置颜色
+      //     .attr('fill', 'white')
+      //     .on("mouseover",function(d,i){
+      //         d3.select(this)
+      //             .transition()
+      //             .duration(300)
+      //             .attr("fill","white")
+      //             .attr('r', 10)
+      //     })
+      //     .on("mouseout",function(d,i){
+      //         d3.select(this)
+      //             .transition()
+      //             .duration(500)
+      //             .attr('r', 5)
+      //             .attr("fill","white");
+      //     });
+      svg.append('g') //画圆点
           .selectAll('circle')
           .data(dataset)
           .enter()
@@ -96,13 +177,21 @@
                   .duration(300)
                   .attr("fill","steelblue")
                   .attr('r', 10)
+              d3.select(".line")
+                  .transition()
+                  .duration(300)
+                  .attr('stroke', 'steelblue')  //设置颜色
           })
           .on("mouseout",function(d,i){
               d3.select(this)
                   .transition()
                   .duration(500)
                   .attr('r', 5)
-                  .attr("fill","green");
+                  .attr("fill","pink");
+              d3.select(".line")  //若要选过一次点后线的颜色不变 此处注释掉即可
+                  .transition()
+                  .duration(300)
+                  .attr('stroke', 'pink')  //设置颜色
           });
     </script>
   </body>

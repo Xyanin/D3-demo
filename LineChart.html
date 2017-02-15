@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>折线图</title>
     <script src='d3.js'></script>
+    <script src='jquery.js'></script>
   </head>  <style>
   .axis path,
   .axis line{
@@ -11,56 +12,68 @@
       stroke: black;
       /*shape-rendering: crispEdges;*/
   }
-
   .axis text {
       font-family: sans-serif;
       font-size: 11px;
   }
+  #change {
+    width: 100px;
+    height: 20px;
+    border: 1px black solid;
+    text-align: center;
+    cursor: pointer;
+  }
   </style>
   <body>
+    <div id='change'>变换</div>
     <script>
+      var i = 0
+      var j = 100
       var width = 500;
       var height = 500;
       var padding = {left: 50, right: 40, top: 30, bottom: 25};
       var dataset= [[1, 224], [2, 528], [3, 756], [4, 632], [5, 582], [6, 704],
       [7, 766], [8, 804], [9, 884], [10, 960], [11, 1095], [12, 1250]];
-
+      var min0, max0, min1, max1, xScale, yScale, xAxis, yAxis
       var svg = d3.select('body') //选择body
                   .append('svg')  //添加svg
                   .attr('width', width)
                   .attr('height', height);  //设置svg长宽
 
-      var min0 = d3.min(dataset, function(d) { //d为每个[], d[0]即为前面那个值 由此来定最大最小
-        return d[0];
-      })
-      var max0 = d3.max(dataset, function(d) {
-        return d[0];
-      })
-      var min1 = d3.min(dataset, function(d) { //d为每个[], d[1]即为后面那个值 由此来定最大最小
-        return d[1];
-      })
-      var max1 = d3.max(dataset, function(d) {
-        return d[1];
-      })
-
-      var xScale = d3.scale.linear()
-                      .domain([min0 - 0.5, max0 + 0.5])
-                      .range([0, width - padding.left - padding.right])
-      var yScale = d3.scale.linear()
-                      .domain([min1 - 100, max1 + 100])
-                      .range([height - padding.top - padding.bottom, 0])
-      var xAxis = d3.svg.axis() //定义x轴
+      function set() {  //设置坐标轴，比例尺
+        min0 = d3.min(dataset, function(d) { //d为每个[], d[0]即为前面那个值 由此来定最大最小
+          return d[0];
+        })
+        max0 = d3.max(dataset, function(d) {
+          return d[0];
+        })
+        min1 = d3.min(dataset, function(d) { //d为每个[], d[1]即为后面那个值 由此来定最大最小
+          return d[1];
+        })
+        max1 = d3.max(dataset, function(d) {
+          return d[1];
+        })
+        xScale = d3.scale.linear()
+                          .domain([min0 - 0.5, max0 + 0.5])
+                          .range([0, width - padding.left - padding.right])
+        yScale = d3.scale.linear()
+                          .domain([min1 - 100, max1 + 100])
+                          .range([height - padding.top - padding.bottom, 0])
+        xAxis = d3.svg.axis() //定义x轴
                   .scale(xScale)
                   .orient('bottom')  //刻度向下
                   .innerTickSize(0) //可以设置刻度线长度
                   .outerTickSize(0) //设置两头的两个刻度的长度
                   .ticks(10) //设置几个刻度
-      var yAxis = d3.svg.axis() //定义y轴
+        yAxis = d3.svg.axis() //定义y轴
                   .scale(yScale)
                   .orient('left');  //刻度向左
+      }
+      set()
 
       svg.append('g') //画x轴
           .attr("class","axis")
+          .attr("id","xAxis")
           .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)
           .call(xAxis)
           .append('text') //加上单位
@@ -68,6 +81,7 @@
           .attr('transform', 'translate(' + (width - padding.left - padding.right) + ', 10)')
       svg.append('g') //画y轴
           .attr("class","axis")
+          .attr("id","yAxis")
           .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
           .call(yAxis)
           .append('text') //加上单位
@@ -76,7 +90,7 @@
 
       var a = d3.rgb(255,0,0);    //起始颜色
       var b = d3.rgb(0,255,0);    //最终颜色
-      
+
       var defs = svg.append('defs');  //开始写线性变换
       var linearGradient = defs.append('linearGradient')
                               .attr('id', 'linearColor')
@@ -90,13 +104,13 @@
       var stop2 = linearGradient.append('stop')
                                 .attr('offset', '80%') //此处设置终止色从几开始
                                 .attr('stop-color', b.toString())
-
       var areaPath = d3.svg.area()  //区域生成器
                         .x(function(d) { return xScale(d[0]) })
                         .y0(function(d) { return height - padding.top - padding.bottom})
                         .y1(function(d) { return yScale(d[1]) })
       svg.append('g')   //画区域要画在最上面这样才不会覆盖线
           .append('path')
+          .attr("id","area")
           .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')
           .attr('d', areaPath(dataset))
           // .attr('fill', 'yellow')
@@ -116,7 +130,7 @@
                         .y(function(d) { return yScale(d[1]) })
       svg.append('g')   //画线
           .append('path')
-          .attr("class","line")
+          .attr("id","line")
           .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')
           .attr('d', linePath(dataset))
           .attr('fill', 'none') //一定要设置为none否则会变成区域
@@ -163,6 +177,7 @@
       //     });
       svg.append('g') //画圆点
           .selectAll('circle')
+          .attr("id", "circle")
           .data(dataset)
           .enter()
           .append('circle')
@@ -177,7 +192,7 @@
                   .duration(300)
                   .attr("fill","steelblue")
                   .attr('r', 10)
-              d3.select(".line")
+              d3.select("#line")
                   .transition()
                   .duration(300)
                   .attr('stroke', 'steelblue')  //设置颜色
@@ -193,6 +208,41 @@
                   .duration(300)
                   .attr('stroke', 'pink')  //设置颜色
           });
+      function data() {
+        i = i + 100
+        j = j + 100
+        dataset= [[1, i], [2, j], [3, i+100], [4, j+100], [5, i], [6, j],
+        [7, 2*i + 200], [8, 2*j + 300], [9, i], [10, j], [11, 2*i - 300], [18, 2*j - 200]];
+      }
+      $('#change').click(function(){
+        data()
+        set()
+        d3.select("#xAxis")
+          .attr('transform', 'translate(' + padding.left + ', ' + (height - padding.bottom) + ')')  //原点移动至（padding.left, padding.top)
+          .transition()
+          .duration(500)
+          .call(xAxis)
+        d3.select("#yAxis")
+          .attr('transform', 'translate(' + padding.left + ', ' + padding.top + ')')  //原点移动至（padding.left, padding.top)
+          .transition()
+          .duration(500)
+          .call(yAxis)
+        d3.select("#line")
+          .transition()
+          .duration(500)
+          .attr('d', linePath(dataset))
+        d3.select("#area")
+          .transition()
+          .duration(500)
+          .attr('d', areaPath(dataset))
+        d3.selectAll("circle")
+          .data(dataset)
+          .transition()
+          .duration(500)
+          .attr('transform', function(d) {
+            return 'translate(' + (xScale(d[0]) + padding.left) + ',' + (yScale(d[1]) + padding.top) + ')'
+          })
+      });
     </script>
   </body>
 </html>
